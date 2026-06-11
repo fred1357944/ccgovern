@@ -49,10 +49,10 @@ class TeamView(VimTableMixin, Vertical):
         totals = self.facade.team_totals(self.month)
         summary = self.query_one("#summary", Static)
         text = (
-            f"[bold #58a6ff]團隊本月（{self.month}）[/bold #58a6ff]   "
-            f"[#3fb950]{totals['dev_count']}[/#3fb950] 人   "
-            f"[#d29922]${totals['total_cost']:,.2f}[/#d29922]   "
-            f"{humanize.intword(totals['total_tokens'])} tokens"
+            f"[bold #58a6ff]團隊本月（{self.month}）[/bold #58a6ff]"
+            f"  ·  [#3fb950]{totals['dev_count']}[/#3fb950] 人"
+            f"  ·  [#d29922]${totals['total_cost']:,.2f}[/#d29922]"
+            f"  ·  {humanize.intword(totals['total_tokens'])} tokens"
         )
         from ccgovern.license import trial_banner
         banner = trial_banner(totals["dev_count"])
