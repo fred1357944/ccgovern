@@ -17,6 +17,8 @@
 | 未來多廠商 collector（Cursor / Copilot） | **永久免費** | 更新權內 | 更新權內 |
 | 優先支援 + 部署協助 | — | — | ✓ |
 
+**[💳 立即購買創始版 Founding Edition →](REPLACE_WITH_LEMONSQUEEZY_URL)**
+
 ## ⏳ 創始版限量 30 組
 
 - 創始版**只賣 30 組**，售完永久停售，價格回到 US$1,299

@@ -10,6 +10,18 @@
 
 繁體中文介面 · vim 風格導航 · 深色主題 · cache-first 啟動 · **全部跑在你自己的內網**。
 
+---
+
+### 💳 創始版 US$499 — 限量 30 組
+
+10 席團隊授權、買斷永久使用、含未來 Cursor/Copilot collector 永久免費。3 位開發者以內全功能免費試用。
+
+**[→ 購買創始版 Founding Edition](REPLACE_WITH_LEMONSQUEEZY_URL)**　·　[定價與 FAQ](PRICING.md)
+
+> 還沒準備好？先 `git clone` 跑 `ccgovern-demo` 看一團假資料動起來。
+
+---
+
 ## 為什麼是這個
 
 個人版 token 工具已被 Anthropic 原生 Tool Search（2026-01）與免費競品（McPick）覆蓋。
