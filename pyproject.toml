@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ccgovern"]
+
+[project]
+name = "ccgovern"
+version = "0.1.0"
+description = "團隊 AI 編碼工具成本治理 — 彙總多開發者的 Claude Code 用量，提供成本 dashboard、預算告警與政策檢查"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "laihongyi" }]
+keywords = ["tui", "claude-code", "cost", "governance", "fleet", "terminal"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "textual>=1.0.0",
+    "humanize>=4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+ccgovern = "ccgovern.tui.app:main"
+ccgovern-collect = "ccgovern.collector.cli:main"
+ccgovern-demo = "ccgovern.demo.seed:main"
+ccgovern-server = "ccgovern.server.http_sync:main"
+ccgovern-report = "ccgovern.server.export:main"
+ccgovern-alert = "ccgovern.server.alerts:main"
+ccgovern-license = "ccgovern.license:main"

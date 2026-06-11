@@ -1,0 +1,23 @@
+Screen { background: #0d1117; color: #c9d1d9; }
+Header { background: #161b22; color: #58a6ff; }
+Footer { background: #161b22; }
+TabbedContent { background: #0d1117; }
+Tabs { background: #161b22; }
+
+DataTable { background: #0d1117; height: 1fr; }
+DataTable > .datatable--header { background: #161b22; color: #58a6ff; text-style: bold; }
+DataTable > .datatable--cursor { background: #1f2937; color: #f0f6fc; }
+
+#summary, #dev-summary, #budget-summary, #policy-summary {
+    height: auto; padding: 0 1; background: #161b22; color: #c9d1d9;
+}
+#detail, #trend, #policy-list {
+    height: auto; max-height: 16; border-top: solid #30363d; padding: 0 1;
+}
+.hint { color: #8b949e; height: auto; padding: 0 1; }
+
+#dialog {
+    width: 64; height: auto; padding: 1 2; border: round #58a6ff; background: #161b22;
+}
+#buttons { height: auto; align-horizontal: right; margin-top: 1; }
+#buttons Button { margin-left: 1; }
