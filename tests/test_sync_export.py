@@ -92,6 +92,45 @@ def test_http_rejects_bad_token_and_bad_body(server):
     assert code == 400
 
 
+def test_http_rejects_path_traversal_developer_id(server):
+    srv, tmp_path = server
+    port = srv.server_address[1]
+    url = f"http://127.0.0.1:{port}/v1/reports"
+    evil = _report(dev="../../etc/pwned").to_dict()
+    code, _ = _post(url, evil, token="secret123")
+    assert code == 400  # 惡意 developer_id 被擋
+    # 確認沒寫出任何檔到 ingest 目錄外
+    assert not (tmp_path.parent / "etc").exists()
+
+
+def test_safe_developer_filename_strips_traversal():
+    from ccgovern.collector.reporter import safe_developer_filename
+    assert "/" not in safe_developer_filename("../../etc/passwd")
+    assert "/" not in safe_developer_filename("a/b/c")
+    assert safe_developer_filename("....//") not in ("..", ".", "")
+    assert safe_developer_filename("alice@team.dev") == "alice_at_team.dev"
+
+
+def test_save_report_blocks_path_escape(tmp_path: Path):
+    from ccgovern.collector.reporter import save_report
+    rep = _report(dev="ok@x")
+    p = save_report(rep, tmp_path)
+    assert p.parent == tmp_path.resolve()  # 落在 out_dir 內
+
+
+def test_make_server_refuses_public_bind_without_token(tmp_path: Path):
+    import pytest as _pytest
+    with _pytest.raises(ValueError, match="拒絕啟動"):
+        http_sync.make_server(host="0.0.0.0", port=0,
+                              ingest_dir=tmp_path / "i", db_path=tmp_path / "d.sqlite",
+                              token=None)
+    # loopback 無 token 可以
+    srv = http_sync.make_server(host="127.0.0.1", port=0,
+                                ingest_dir=tmp_path / "i", db_path=tmp_path / "d.sqlite",
+                                token=None)
+    srv.server_close()
+
+
 def test_http_upload_idempotent(server):
     srv, tmp_path = server
     port = srv.server_address[1]

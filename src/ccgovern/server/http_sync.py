@@ -10,7 +10,9 @@ GET  /v1/health    → {"status": "ok"}
 from __future__ import annotations
 
 import argparse
+import hmac
 import json
+import re
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -20,6 +22,8 @@ from ccgovern.models.report import DeveloperReport
 from ccgovern.server import ingest, store
 
 MAX_BODY = 50 * 1024 * 1024  # 50MB 上限，防誤傳大檔
+_DEV_ID_RE = re.compile(r"[A-Za-z0-9._@+-]{1,128}")  # developer_id 白名單
+_LOOPBACK = {"127.0.0.1", "::1", "localhost"}
 
 
 class SyncHandler(BaseHTTPRequestHandler):
@@ -41,10 +45,13 @@ class SyncHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _authorized(self) -> bool:
+        # 無 token = 僅限 loopback 綁定（make_server 已強制），此時放行內網本機
         if not self.token:
             return True
         auth = self.headers.get("Authorization", "")
-        return auth == f"Bearer {self.token}"
+        expected = f"Bearer {self.token}"
+        # 常數時間比對，避免 timing 側信道猜 token
+        return hmac.compare_digest(auth.encode("utf-8"), expected.encode("utf-8"))
 
     def do_GET(self) -> None:
         if self.path == "/v1/health":
@@ -72,8 +79,9 @@ class SyncHandler(BaseHTTPRequestHandler):
         except (json.JSONDecodeError, UnicodeDecodeError):
             self._send_json(400, {"error": "invalid json"})
             return
-        if not isinstance(data, dict) or not data.get("developer_id"):
-            self._send_json(400, {"error": "missing developer_id"})
+        dev_id = data.get("developer_id") if isinstance(data, dict) else None
+        if not dev_id or not _DEV_ID_RE.fullmatch(str(dev_id)):
+            self._send_json(400, {"error": "missing or invalid developer_id"})
             return
 
         report = DeveloperReport.from_dict(data)
@@ -101,7 +109,16 @@ def make_server(
     db_path: Path = DB_FILE,
     token: str | None = None,
 ) -> ThreadingHTTPServer:
-    """建立（未啟動的）伺服器；測試可用 port=0 取隨機埠。"""
+    """建立（未啟動的）伺服器；測試可用 port=0 取隨機埠。
+
+    安全閘：未設 token 時，只允許綁 loopback。綁公開網卡卻無 token → 拒絕啟動，
+    避免任何人都能往中央塞資料。
+    """
+    if not token and host not in _LOOPBACK:
+        raise ValueError(
+            f"拒絕啟動：host={host} 是對外綁定但未設 token。"
+            "請設定 --token，或改綁 127.0.0.1（僅本機）。"
+        )
     handler = type("BoundSyncHandler", (SyncHandler,), {
         "ingest_dir": Path(ingest_dir),
         "db_path": Path(db_path),
@@ -113,14 +130,19 @@ def make_server(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="CCGovern 報告上傳伺服器")
-    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--host", default="127.0.0.1",
+                        help="預設 127.0.0.1（僅本機）；要收其他機器上傳請設對外位址 + --token")
     parser.add_argument("--port", type=int, default=8377)
-    parser.add_argument("--token", default=None, help="Bearer token（建議設定）")
+    parser.add_argument("--token", default=None, help="Bearer token（對外綁定時必填）")
     args = parser.parse_args()
 
-    server = make_server(args.host, args.port, token=args.token)
+    try:
+        server = make_server(args.host, args.port, token=args.token)
+    except ValueError as e:
+        print(f"✗ {e}")
+        raise SystemExit(1)
     print(f"CCGovern sync server 監聽 {args.host}:{args.port}")
-    print(f"上傳端點：POST /v1/reports（{'需要 token' if args.token else '⚠ 未設 token，僅限信任網路'}）")
+    print(f"上傳端點：POST /v1/reports（{'需要 token' if args.token else '無 token，僅限本機 loopback'}）")
     print(f"資料落地：{INGEST_DIR} → {DB_FILE}")
     try:
         server.serve_forever()
