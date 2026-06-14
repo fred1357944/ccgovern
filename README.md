@@ -1,5 +1,9 @@
 # CCGovern — 團隊 AI 編碼工具成本治理
 
+[![CI](https://github.com/fred1357944/ccgovern/actions/workflows/ci.yml/badge.svg)](https://github.com/fred1357944/ccgovern/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+
 > **Team cost governance for AI coding tools.** Aggregate every developer's Claude Code
 > usage into a team dashboard with budget alerts, policy enforcement, and manager reports.
 > **Fully self-hosted** — usage data never leaves your network. Zero cloud dependency,
